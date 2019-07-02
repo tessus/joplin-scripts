@@ -1,0 +1,8 @@
+# Joplin settings directory
+JOPLIN_DIR=~/.config/joplin-desktop
+
+# TOKEN for Joplin Web Clipper (can be found in 'Web clipper options')
+CLIPPER_TOKEN=
+
+# Web Clipper Port (can be found in 'Web clipper options')
+CLIPPER_PORT=41184

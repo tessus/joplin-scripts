@@ -1,0 +1,304 @@
+#!/usr/bin/env bash
+
+VERSION=1.0.0
+
+BASH=`which bash`
+BASH_VERSION=`$BASH --version |head -1 |sed 's/.*version \(.*\)-release.*/\1/' |cut -c 1`
+if [ $BASH_VERSION -lt 4 ]; then
+	echo "Error: bash must be at least version 4."
+	exit 1
+fi
+
+# Retrieve script directory (not following link)
+SCRIPT="${BASH_SOURCE[0]}"
+SCRIPT_DIR="$( cd "$( dirname "${SCRIPT}" )" && pwd )"
+INVOCATION_DIR=`pwd`
+
+# Retrieve script name (follow link)
+PROG=`basename "$0"`
+
+CONFIGFILE=".${PROG}.conf"
+
+JOPLIN_DIR=
+JOPLIN_SYNC_TARGET=
+
+VALID_RESOURCES=`mktemp "${TMPDIR:-/tmp/}$PROG.vr.XXXXXXXX"`
+DELETE_RESOURCES=`mktemp "${TMPDIR:-/tmp/}$PROG.dr.XXXXXXXX"`
+
+# on macOS, the default getopt is a useless piece of shit
+# install getopt via MacPorts or brew and put it in the PATH before /usr/bin
+if [ "`getopt -V |cut -d\" \" -f1`" != "getopt" ]; then
+	echo "Error: getopt not compatible enough."
+	exit 1
+fi
+
+trap cleanup 0 1 2 3 6 15
+
+function cleanup {
+	if [ -a "$VALID_RESOURCES" ]; then
+		unlink "$VALID_RESOURCES"
+	fi
+	if [ -a "$DELETE_RESOURCES" ]; then
+		unlink "$DELETE_RESOURCES"
+	fi
+}
+
+function eexit {
+	cleanup
+	trap - 0 1 2 3 6 15
+	exit $1
+}
+
+function usage {
+	echo "usage: ${PROG} [-c CONFIGFILE] [-f] [-q|--quiet] [-n|--dry-run] [-d|--debug] [-V|--version] [-h] [--help]"
+}
+
+function long_usage {
+	echo "${PROG} - clean sync target (remove orphaned resources)                 "
+	echo ""
+	usage
+	echo ""
+	echo "       -c CONFIGFILE                                                    "
+	echo "           use CONFIGFILE, instead of searching the default locations:  "
+	echo "              $SCRIPT_DIR/$CONFIGFILE"
+	echo "              $HOME/$CONFIGFILE"
+	echo "           The first file found is used.                                "
+	echo ""
+	echo "       -f                                                               "
+	echo "           run without confirmation                                     "
+	echo ""
+#	echo "       -e                                                               "
+#	echo "           create a file with resources to be deleted                   "
+#	echo "           (no resources are deleted)                                   "
+#	echo ""
+#	echo "       -t FILE                                                          "
+#	echo "           delete resources listed in FILE                              "
+#	echo ""
+	echo "       -q, --quiet                                                      "
+	echo "           do not print informational messages                          "
+	echo "           (errors will be shown)                                       "
+	echo ""
+	echo "       -n, --dry-run                                                    "
+	echo "           only show orphaned resources (do not actually delete them)   "
+	echo "           implies -f                                                   "
+	echo ""
+	echo "       -d, --debug                                                      "
+	echo "           print debug information                                      "
+	echo ""
+	echo "       -V, --version                                                    "
+	echo "           version information                                          "
+	echo ""
+	echo "       -h                                                               "
+	echo "           usage information                                            "
+	echo ""
+	echo "       --help                                                           "
+	echo "           this help                                                    "
+	echo ""
+}
+
+cflag=0
+fflag=0
+eflag=0
+tflag=0
+qflag=0
+nflag=0
+dflag=0
+Vflag=0
+hflag=0
+hlflag=0
+
+#options=$(getopt -n $PROG -q -o c:et:nqdVh -l help,version,debug,dry-run,quiet -- "$@")
+options=$(getopt -n $PROG -q -o c:fnqdVh -l help,version,debug,dry-run,quiet -- "$@")
+if [ $? != 0 ]
+then
+	echo "${PROG}: Error: unrecognized option $1"
+	usage
+	exit 1
+fi
+
+eval set -- "$options"
+
+while [ $# -gt 0 ]
+do
+	case "$1" in
+	-c)
+		cflag=1
+		carg=$2
+		shift;;
+#	-e)
+#		eflag=1;;
+#	-t)
+#		tflag=1
+#		targ=$2
+#		shift;;
+	-f)
+		fflag=1;;
+	-q|--quiet)
+		qflag=1;;
+	-n|--dry-run)
+		nflag=1;;
+	-V|--version)
+		Vflag=1;;
+	-d|--debug)
+		dflag=1;;
+	-h)
+		hflag=1;;
+	--help)
+		hlflag=1;;
+	--)
+		shift; break;;
+	*)
+		exit;
+		break;;
+	esac
+	shift
+done
+
+if [ "$hflag" == "1" ]
+then
+	usage
+	exit
+fi
+
+if [ "$hlflag" == "1" ]
+then
+	long_usage
+	exit
+fi
+
+if [ "$nflag" == "1" ]
+then
+	fflag=1
+fi
+
+if [ "$Vflag" == "1" ]
+then
+	echo "$PROG $VERSION"
+	exit
+fi
+
+function debug {
+	if [ "$dflag" == "1" ]; then
+		echo "[debug] $@"
+	fi
+}
+
+function info {
+	if [ "$qflag" != "1" ]; then
+		echo "$@"
+	fi
+}
+
+function info-n {
+	if [ "$qflag" != "1" ]; then
+		echo -n "$@"
+	fi
+}
+
+function noConfigFound {
+	FN=' '
+	if [ ! -z "$1" ]; then
+		FN=" '$1' "
+	fi
+	echo "Error: No config file${FN}found."
+	exit 1
+}
+
+# precedence of config files:
+# command line options
+# config file specified on the command line
+# environment vars
+# local config file - same dir as script (if exists; not following link for dir)
+# local config file - $HOME dir (if exists)
+# global config file (if exists)
+
+if [ "$cflag" == "1" ]; then
+	if [ -e "$carg" ]; then
+		. "$carg"
+		debug "Using config file: $carg"
+	else
+		noConfigFound "$carg"
+	fi
+elif [ -e "$SCRIPT_DIR/$CONFIGFILE" ]; then
+	. "$SCRIPT_DIR/$CONFIGFILE"
+	debug "Using config file: $SCRIPT_DIR/$CONFIGFILE"
+elif [ -e "$HOME/$CONFIGFILE" ]; then
+	. "$HOME/$CONFIGFILE"
+	debug "Using config file: $HOME/$CONFIGFILE"
+else
+	noConfigFound
+fi
+
+DB=${JOPLIN_DIR}/database.sqlite
+if [ ! -e "$DB" ]; then
+	echo "Error: Joplin database not found."
+	exit 1
+fi
+debug "Joplin database:     $DB"
+
+if [ ! -e "$JOPLIN_SYNC_TARGET" ]; then
+	echo "Error: Joplin sync target not found."
+	exit 1
+fi
+debug "Joplin sync target:  $JOPLIN_SYNC_TARGET"
+RESDIR=${JOPLIN_SYNC_TARGET}/.resource
+
+# retrieve the IDs of orphaned resources from the database
+sqlite3 $DB "select id from resources" >$VALID_RESOURCES
+
+if [ ! -s "$VALID_RESOURCES" ]; then
+	info "No resources found."
+	exit
+fi
+
+ERR=0
+
+if [ "$fflag" != "1" ]; then
+	echo -n "Delete orphaned resources in '$RESDIR'? (yes/no): "
+	read answer
+
+	if [ "$answer"x != "yes"x ]; then
+		exit 1
+	fi
+fi
+
+# build array of valid resources
+
+declare -A VALID
+for id in `cat $VALID_RESOURCES`
+do
+	VALID[$id]=1
+done
+
+debug "Number of resources: ${#VALID[@]}"
+debug "List of resources:   ${!VALID[@]}"
+
+cd $RESDIR
+for f in *
+do
+	if [ ${VALID[$f]+_} ]; then
+		info "Keeping  resource id: $f"
+	else
+		info-n "Deleting resource id: $f"
+		if [ "$nflag" == "0" ]; then
+			echo $f >>$DELETE_RESOURCES
+			unlink $f
+			info " - Success"
+		elif [ "$qflag" == "0" ]; then
+			echo ""
+		fi
+	fi
+done
+
+#if [ "$eflag" == "1" ]; then
+#	if [ "$earg" != "${earg#/}" ]; then
+#		echo "absolute"
+#	else
+#		echo "relative"
+#	fi
+#	echo cp $DELETE_RESOURCES $earg
+#fi
+
+if [ "$ERR" != "0" ]; then
+	exit 1
+fi

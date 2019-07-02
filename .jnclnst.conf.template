@@ -1,0 +1,5 @@
+# Joplin settings directory
+JOPLIN_DIR=~/.config/joplin-desktop
+
+# Joplin sync target directory
+JOPLIN_SYNC_TARGET=
