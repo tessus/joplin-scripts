@@ -5,6 +5,8 @@ Why are there 2 scripts to remove resources?
 The first script `jnrmor` removes orphaned resources from the database and the meta data files for those resources from the sync target. Due to an error in the Joplin API, the actual resources are not deleted on the sync target.
 There's where script `jnclnst` comes to the rescue.
 
+The default locations for the config files are the path of the script and your home directory. These locations will be shown with the option `--help`.
+
 ## `jnrmor` - remove orphaned resources in Joplin
 
 ```
