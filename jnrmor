@@ -153,19 +153,19 @@ fi
 
 function debug {
 	if [ "$dflag" == "1" ]; then
-		echo "[debug] $1"
+		echo "[debug] $@"
 	fi
 }
 
 function info {
 	if [ "$qflag" != "1" ]; then
-		echo "$1"
+		echo "$@"
 	fi
 }
 
 function info_n {
 	if [ "$qflag" != "1" ]; then
-		echo -n "$1"
+		echo -n "$@"
 	fi
 }
 
