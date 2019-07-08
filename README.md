@@ -7,6 +7,28 @@ There's where script `jnclnst` comes to the rescue.
 
 The default locations for the config files are the path of the script and your home directory. These locations will be shown with the option `--help`.
 
+## Requirements
+
+bash version 4 is required for `jnclnst`. All scripts use getopt to parse the arguments. Unfortunately the getopt that comes with macOS is a useless piece of shit and can't be used in any useful manner.
+
+### macOS
+
+The best way to install proper versions of `bash` and `getopt` is to either use MacPorts or brew. Make sure they binaries are in the PATH before `/bin` and `/usr/bin`.
+
+#### MacPorts
+
+```
+sudo port install bash
+sudo port install getopt
+```
+
+#### brew
+
+```
+brew install bash
+brew install gnu-getopt
+```
+
 ## `jnrmor` - remove orphaned resources in Joplin
 
 ```
