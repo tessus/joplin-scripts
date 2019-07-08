@@ -189,7 +189,7 @@ function info {
 	fi
 }
 
-function info-n {
+function info_n {
 	if [ "$qflag" != "1" ]; then
 		echo -n "$@"
 	fi
@@ -279,7 +279,7 @@ do
 	if [ ${VALID[$f]+_} ]; then
 		info "Keeping  resource id: $f"
 	else
-		info-n "Deleting resource id: $f"
+		info_n "Deleting resource id: $f"
 		if [ "$nflag" == "0" ]; then
 			echo $f >>$DELETE_RESOURCES
 			unlink $f

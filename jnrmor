@@ -163,7 +163,7 @@ function info {
 	fi
 }
 
-function info-n {
+function info_n {
 	if [ "$qflag" != "1" ]; then
 		echo -n "$1"
 	fi
@@ -245,7 +245,7 @@ do
 	curlCMD="curl -s -X DELETE http://localhost:${CLIPPER_PORT}/resources/${id}?token=${CLIPPER_TOKEN}"
 	debug "$curlCMD"
 	infotext="Deleting resource id: $id"
-	info-n "$infotext"
+	info_n "$infotext"
 	if [ "$nflag" == "0" ]; then
 		# Delete ID
 		rc=""
@@ -261,7 +261,7 @@ do
 				echo -n " - $rc"
 			fi
 		else
-			info-n " - Success"
+			info_n " - Success"
 		fi
 	fi
 
