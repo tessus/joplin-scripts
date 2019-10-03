@@ -2,8 +2,8 @@
 
 Why are there 2 scripts to remove resources?
 
-The first script `jnrmor` removes orphaned resources from the database and the meta data files for those resources from the sync target. Due to an error in the Joplin API, the actual resources are not deleted on the sync target.
-There's where script `jnclnst` comes to the rescue.
+The first script `jnrmor` removes orphaned resources from the database and the meta data files for those resources from the sync target. ~~Due to an error in the Joplin API, the actual resources are not deleted on the sync target.
+There's where script `jnclnst` comes to the rescue.~~
 
 The default locations for the config files are the path of the script and your home directory. These locations will be shown with the option `--help`.
 
@@ -62,7 +62,12 @@ usage: jnrmor [-c CONFIGFILE] [-f] [-q|--quiet] [-n|--dry-run] [-d|--debug] [-V|
            this help
 ```
 
+If you rather use a perl script, head over [here](https://github.com/sciurius/perl-Joplin-API). You can use the script `listnotes.pl` with the option `--weed`.
+
 ## `jnclnst` - clean sync target (remove orphaned resources from sync target)
+
+This script is no longer needed. A fix was added to Joplin a while back. It’s only here for reference and for people who still use an old Joplin version.
+It doesn’t hurt to run the script, it just won’t find anything to remove anything anymore.
 
 ```
 usage: jnclnst [-c CONFIGFILE] [-f] [-q|--quiet] [-n|--dry-run] [-d|--debug] [-V|--version] [-h] [--help]
