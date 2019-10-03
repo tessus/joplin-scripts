@@ -13,7 +13,7 @@ bash version 4 is required for `jnclnst`. All scripts use getopt to parse the ar
 
 ### macOS
 
-The best way to install proper versions of `bash` and `getopt` is to either use MacPorts or brew. Make sure they binaries are in the PATH before `/bin` and `/usr/bin`.
+The best way to install proper versions of `bash` and `getopt` is to either use MacPorts or brew. Make sure the binaries are in the PATH before `/bin` and `/usr/bin`.
 
 #### MacPorts
 
