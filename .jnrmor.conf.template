@@ -1,4 +1,4 @@
-# Joplin settings directory
+# Joplin profile directory (where the database is located)
 JOPLIN_DIR=~/.config/joplin-desktop
 
 # TOKEN for Joplin Web Clipper (can be found in 'Web clipper options')
