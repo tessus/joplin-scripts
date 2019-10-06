@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=1.1.0
+VERSION=1.2.0
 
 # Retrieve script directory (not following link)
 SCRIPT="${BASH_SOURCE[0]}"
@@ -68,6 +68,14 @@ function long_usage {
 	echo "       -d, --debug                                                      "
 	echo "           print debug information                                      "
 	echo ""
+	echo "       --zero-history                                                   "
+	echo "           DO NOT USE THIS - it is very dangerous - DATA LOSS!!!        "
+	echo "           override history timeframe and set to 0                      "
+	echo ""
+	echo "       --ignore-revisions                                               "
+	echo "           DO NOT USE THIS - it is very dangerous - DATA LOSS!!!        "
+	echo "           delete resources, even if they are used in revisions         "
+	echo ""
 	echo "       -V, --version                                                    "
 	echo "           version information                                          "
 	echo ""
@@ -87,8 +95,10 @@ dflag=0
 Vflag=0
 hflag=0
 hlflag=0
+zhflag=0
+irflag=0
 
-options=$(getopt -n $PROG -q -o c:fnqdVh -l help,version,debug,dry-run,quiet -- "$@")
+options=$(getopt -n $PROG -q -o c:fnqdVh -l help,version,debug,dry-run,quiet,zero-history,ignore-revisions -- "$@")
 if [ $? != 0 ]
 then
 	echo "${PROG}: Error: unrecognized option $1"
@@ -119,6 +129,10 @@ do
 		hflag=1;;
 	--help)
 		hlflag=1;;
+	--zero-history)
+		zhflag=1;;
+	--ignore-revisions)
+		irflag=1;;
 	--)
 		shift; break;;
 	*)
@@ -222,7 +236,14 @@ fi
 debug "Web Clipper port:  $CLIPPER_PORT"
 
 # retrieve the IDs of orphaned resources from the database
-sqlite3 $DB "select resource_id from note_resources where is_associated = 0" >$TMPFILE
+KEEP=`sqlite3 $DB "select value from settings where key = 'revisionService.ttlDays'"`
+if [ "$zhflag" == "1" ]; then
+	KEEP=0
+fi
+sqlite3 $DB "select resource_id from note_resources where is_associated = 0 and resource_id not in (select resource_id from note_resources where is_associated = 1) group by resource_id having max(last_seen_time) < strftime('%s','now','-${KEEP} days')*1000" >$TMPFILE
+if [ "$irflag" == "1" ]; then
+	sqlite3 $DB "select resource_id from note_resources where is_associated = 0" >$TMPFILE
+fi
 
 if [ ! -s "$TMPFILE" ]; then
 	info "No orphaned resources found."
@@ -230,6 +251,22 @@ if [ ! -s "$TMPFILE" ]; then
 fi
 
 ERR=0
+
+if [[ "$irflag" == "1" || "$zhflag" == "1" ]]; then
+	if [ "$nflag" == "0" ]; then
+		echo "DANGER: You are using a very dangerous option."
+		echo "DANGER: Data loss is not only possible but rather almost certain."
+		echo ""
+		echo -n "Are you absolutely sure you know what you are doing? (yes/no): "
+		read answer
+
+		if [ "$answer"x != "yes"x ]; then
+			exit 1
+		fi
+		echo ""
+		unset answer
+	fi
+fi
 
 if [ "$fflag" != "1" ]; then
 	echo -n "Delete orphaned resources? (yes/no): "
