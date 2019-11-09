@@ -1,0 +1,21 @@
+#!/bin/bash
+
+BACKUP_DIR=/data/backup/joplin
+
+export NODEJS_HOME=/usr/local/lib/nodejs/node-v12.13.0/bin
+export NODEJS_GLOBAL_HOME=$HOME/.node_modules_global/bin
+
+PATH=$HOME/bin:$NODEJS_GLOBAL_HOME:$NODEJS_HOME:$PATH
+export PATH
+
+D=`date +'%Y-%m-%d_%H-%M'`
+
+joplin sync
+joplin e2ee decrypt
+
+cd "$BACKUP_DIR"
+rm -f *.md
+rm -f resources/*
+joplin --log-level debug export --format raw "$BACKUP_DIR"
+git add .
+git commit -m "Update on ${D}"

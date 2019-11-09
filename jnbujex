@@ -1,0 +1,17 @@
+#!/bin/bash
+
+BACKUP_DIR=/data/backup/joplin
+KEEP_DAYS=28
+
+export NODEJS_HOME=/usr/local/lib/nodejs/node-v12.13.0/bin
+export NODEJS_GLOBAL_HOME=$HOME/.node_modules_global/bin
+
+PATH=$HOME/bin:$NODEJS_GLOBAL_HOME:$NODEJS_HOME:$PATH
+export PATH
+
+D=`date +'%Y-%m-%d_%H-%M'`
+
+joplin sync
+joplin e2ee decrypt
+joplin export --format jex ${BACKUP_DIR}/joplin_${D}.jex
+find ${BACKUP_DIR}/ -name '*.jex' -mtime +${KEEP_DAYS} -exec rm {} \;
