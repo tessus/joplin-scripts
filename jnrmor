@@ -237,6 +237,9 @@ debug "Web Clipper port:  $CLIPPER_PORT"
 
 # retrieve the IDs of orphaned resources from the database
 KEEP=`sqlite3 $DB "select value from settings where key = 'revisionService.ttlDays'"`
+if [ -z "$KEEP" ]; then
+	KEEP=90
+fi
 if [ "$zhflag" == "1" ]; then
 	KEEP=0
 fi
