@@ -9,7 +9,7 @@ The default locations for the config files are the path of the script and your h
 
 ## Requirements
 
-bash version 4 is required for `jnclnst`. All scripts use getopt to parse the arguments. Unfortunately the getopt that comes with macOS is a useless piece of shit and can't be used in any useful manner.
+bash version 4 is required for `jnclnst`. Some scripts use getopt to parse the arguments. Unfortunately the getopt that comes with macOS is a useless piece of shit and can't be used in any useful manner.
 
 ### macOS
 
