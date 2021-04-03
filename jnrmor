@@ -280,7 +280,7 @@ if [ "$fflag" != "1" ]; then
 	fi
 fi
 
-for id in `cat $TMPFILE`
+for id in `sed 's/\s\+$//' $TMPFILE`
 do
 	curlCMD="curl -s -X DELETE http://localhost:${CLIPPER_PORT}/resources/${id}?token=${CLIPPER_TOKEN}"
 	debug "$curlCMD"
