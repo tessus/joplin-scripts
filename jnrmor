@@ -52,6 +52,7 @@ function long_usage {
 	echo "           use CONFIGFILE, instead of searching the default locations:  "
 	echo "              $SCRIPT_DIR/$CONFIGFILE                                   "
 	echo "              $HOME/$CONFIGFILE                                         "
+	echo "              ${XDG_CONFIG_HOME:-$HOME/.config}/$CONFIGFILE             "
 	echo "           The first file found is used.                                "
 	echo ""
 	echo "       -f                                                               "
@@ -213,6 +214,9 @@ elif [ -e "$SCRIPT_DIR/$CONFIGFILE" ]; then
 elif [ -e "$HOME/$CONFIGFILE" ]; then
 	. "$HOME/$CONFIGFILE"
 	debug "Using config file: $HOME/$CONFIGFILE"
+elif [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/$CONFIGFILE" ]; then
+	. "${XDG_CONFIG_HOME:-$HOME/.config}/$CONFIGFILE"
+	debug "Using config file: ${XDG_CONFIG_HOME:-$HOME/.config}/$CONFIGFILE"
 else
 	noConfigFound
 fi
