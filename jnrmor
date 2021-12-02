@@ -199,6 +199,7 @@ function noConfigFound {
 # environment vars
 # local config file - same dir as script (if exists; not following link for dir)
 # local config file - $HOME dir (if exists)
+# local config file - $XDG_CONFIG_HOME or $HOME/.config dir (if exists)
 # global config file (if exists)
 
 if [ "$cflag" == "1" ]; then
