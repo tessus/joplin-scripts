@@ -16,7 +16,7 @@ JOPLIN_DIR=
 CLIPPER_TOKEN=
 CLIPPER_PORT=
 
-TMPFILE=`mktemp "${TMPDIR:-/tmp/}$PROG.XXXXXXXX"`
+TMPFILE=`mktemp "${TMPDIR:-/tmp}/$PROG.XXXXXXXX"`
 
 # on macOS, the default getopt is a useless piece of shit
 # install getopt via MacPorts or brew and put it in the PATH before /usr/bin

@@ -22,8 +22,8 @@ CONFIGFILE=".${PROG}.conf"
 JOPLIN_DIR=
 JOPLIN_SYNC_TARGET=
 
-VALID_RESOURCES=`mktemp "${TMPDIR:-/tmp/}$PROG.vr.XXXXXXXX"`
-DELETE_RESOURCES=`mktemp "${TMPDIR:-/tmp/}$PROG.dr.XXXXXXXX"`
+VALID_RESOURCES=`mktemp "${TMPDIR:-/tmp}/$PROG.vr.XXXXXXXX"`
+DELETE_RESOURCES=`mktemp "${TMPDIR:-/tmp}/$PROG.dr.XXXXXXXX"`
 
 # on macOS, the default getopt is a useless piece of shit
 # install getopt via MacPorts or brew and put it in the PATH before /usr/bin
