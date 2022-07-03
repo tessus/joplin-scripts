@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=1.0.1
+VERSION=1.0.2
 
 BASH=`which bash`
 BASH_VERSION=`$BASH --version |head -1 |sed 's/.*version \(.*\)-release.*/\1/' |cut -c 1`

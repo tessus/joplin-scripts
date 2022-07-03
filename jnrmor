@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=1.2.3
+VERSION=1.2.4
 
 # Retrieve script directory (not following link)
 SCRIPT="${BASH_SOURCE[0]}"
