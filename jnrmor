@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=1.2.4
+VERSION=1.3.0
 
 # Retrieve script directory (not following link)
 SCRIPT="${BASH_SOURCE[0]}"
@@ -240,14 +240,29 @@ if [ -z "$CLIPPER_PORT" ]; then
 fi
 debug "Web Clipper port:  $CLIPPER_PORT"
 
-# retrieve the IDs of orphaned resources from the database
-KEEP=`sqlite3 $DB "select value from settings where key = 'revisionService.ttlDays'"`
-if [ -z "$KEEP" ]; then
-	KEEP=90
+SETTINGSFILE=${JOPLIN_DIR}/settings.json
+if [ -e "$SETTINGSFILE" ]; then
+	if [[ ! `command -v jq` ]]; then
+		echo "Error: jg not found."
+		eexit 1
+	fi
+	debug "Settings file:     $SETTINGSFILE"
+	KEEP=`cat $SETTINGSFILE |jq -r '."revisionService.ttlDays"'`
+	if [ "$KEEP" == "null" ]; then
+		KEEP=90
+	fi
+else
+	KEEP=`sqlite3 $DB "select value from settings where key = 'revisionService.ttlDays'"`
+	if [ -z "$KEEP" ]; then
+		KEEP=90
+	fi
 fi
+debug "History (days):    $KEEP"
 if [ "$zhflag" == "1" ]; then
 	KEEP=0
+	debug "Set history to zero."
 fi
+# retrieve the IDs of orphaned resources from the database
 sqlite3 $DB "select resource_id from note_resources where is_associated = 0 and resource_id not in (select resource_id from note_resources where is_associated = 1) group by resource_id having max(last_seen_time) < strftime('%s','now','-${KEEP} days')*1000" >$TMPFILE
 if [ "$irflag" == "1" ]; then
 	sqlite3 $DB "select resource_id from note_resources where is_associated = 0" >$TMPFILE
