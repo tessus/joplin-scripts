@@ -14,12 +14,12 @@ bash version 4 is required for `jnclnst`. Some scripts use getopt to parse the a
 ### macOS
 
 The best way to install proper versions of `bash` and `getopt` is to either use MacPorts or brew. Make sure the binaries are in the PATH before `/bin` and `/usr/bin`.
+Another potential dependency is `jq` (which is required when using newer Joplin versions that stores settings not only in the database, but a json file as well).
 
 #### MacPorts
 
 ```
-sudo port install bash
-sudo port install getopt
+sudo port install bash util-linux jq
 ```
 
 #### brew
@@ -27,6 +27,7 @@ sudo port install getopt
 ```
 brew install bash
 brew install gnu-getopt
+brew install jq
 ```
 
 ## `jnrmor` - remove orphaned resources in Joplin
